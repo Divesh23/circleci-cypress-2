@@ -1,23 +1,16 @@
 version: 2.1
 orbs:
-  cypress: cypress-io/cypress@2.2.0
-executors:
-  with-chrome:
-    resource_class: small
-    docker:
-      - image: "cypress/browsers:node14.16.0-chrome90-ff88"
+  cypress: cypress-io/cypress@2
 workflows:
   build:
     jobs:
-      - cypress/install
+      - cypress/install:
+          build: 'npm run build' # run a custom app build step
       - cypress/run:
           requires:
             - cypress/install
-          executor: with-chrome
-          browser: chrome
-          post-steps:
-            - run: ls
-            - store_test_results:
-                path: cypress/results
-            - store_artifacts:
-                path: cypress/screenshots
+          record: true # record results with Cypress Cloud
+          parallel: true # split all specs across machines
+          parallelism: 4 # use 4 CircleCI machines to finish quickly
+          group: 'all tests' # name this group "all tests" on the dashboard
+          start: 'npm start' # start server before running tests
