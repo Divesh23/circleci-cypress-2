@@ -11,13 +11,9 @@ workflows:
     jobs:
       - cypress/install
       - cypress/run:
+      store_artifacts: true
+      record: true
           requires:
             - cypress/install
           executor: with-chrome
           browser: chrome
-          post-steps:
-            - run: ls
-            - store_test_results:
-                path: /
-            - store_artifacts:
-                path: /
