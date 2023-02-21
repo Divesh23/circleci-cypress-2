@@ -1,3 +1,6 @@
+version: 2
+jobs:
+  build:
  test_cypress:
     working_directory: ~/theintercept
     docker:
