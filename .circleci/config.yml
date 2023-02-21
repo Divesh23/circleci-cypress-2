@@ -13,7 +13,7 @@ workflows:
       - cypress/run:
           requires:
             - cypress/install
-          record: true
+          store_artifacts: true
           executor: with-chrome
           browser: chrome
           post-steps:
