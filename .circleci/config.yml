@@ -1,24 +1,37 @@
-version: 2.1
-orbs:
-  cypress: cypress-io/cypress@2.2.0
-executors:
-  with-chrome:
-    resource_class: small
+ test_cypress:
+    working_directory: ~/theintercept
     docker:
-      - image: "cypress/browsers:node14.16.0-chrome90-ff88"
-workflows:
-  build:
-    jobs:
-      - cypress/install
-      - cypress/run:
-          requires:
-            - cypress/install
-          store_artifacts: true
-          executor: with-chrome
-          browser: chrome
-          post-steps:
-            - run: ls
-            - store_test_results:
-                path: cypress/results
-            - store_artifacts:
-                path: cypress/screenshots
+      - image: cypress/base:6
+        environment:
+          TERM: xterm
+    parallelism: 1
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restoring cached yarn dependencies
+          keys:
+            - integration-tests-yarn-dependencies-{{ checksum "integration-tests/yarn.lock" }}
+      - run:
+          name: Installing dependencies with yarn
+          command: |
+            cd integration-tests
+            yarn install --frozen-lockfile
+            yarn list
+      - save_cache:
+          name: Caching yarn dependencies
+          key: integration-tests-yarn-dependencies-{{ checksum "integration-tests/yarn.lock" }}
+          paths:
+            - ~/.cache/Cypress
+            - ~/.cache/yarn
+            - ~/theintercept/integration-tests/node_modules
+      - run:
+          name: Running E2E tests with JUnit reporter
+          command: |
+            cd integration-tests
+            yarn test:record
+      - store_test_results:
+          path: integration-tests/test-results
+      - store_artifacts:
+          path: integration-tests/test-results
+      - store_artifacts:
+          path: integration-tests/test-artifacts
